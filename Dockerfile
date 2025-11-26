@@ -1,36 +1,33 @@
 # =============================
-# NetGoat Dockerfile
+# 🐐 NetGoat | MicroService | LogDB
 # =============================
 # Maintainer: Duckey Dev <ducky@cloudable.dev>
-# Description: Production container for NetGoat Frontend (DOES NOT INCLUDE Main_Files, CENTRALMON, OR Frontend)
+# Description: Lightweight production container for ElysiaJS-based LogDB service
 # =============================
 
-# Copilot Prompt: make this code follow community standards, with Labels and such, add human like comments, seprators, etc
+FROM oven/bun:latest AS production
 
-FROM bun:latest AS base
+LABEL org.opencontainers.image.title="NetGoat LogDB" \
+      org.opencontainers.image.description="Lightweight ElysiaJS microservice for NetGoat (LogDB)" \
+      org.opencontainers.image.authors="Duckey Dev <ducky@cloudable.dev>" \
+      org.opencontainers.image.source="https://github.com/Cloudable-dev/netgoat" \
+      org.opencontainers.image.licenses="MIT"
 
-# ---- Metadata ----
-LABEL org.opencontainers.image.title="NetGoat Frontend"
-LABEL org.opencontainers.image.description="Production container for NetGoat (DOES NOT INCLUDE Main_Files, CENTRALMON, OR Frontend)"
-LABEL org.opencontainers.image.authors="Duckey Dev <ducky@cloudable.dev>"
-LABEL org.opencontainers.image.source="https://github.com/Cloudable-dev/netgoat"
-
-# ---- Set working directory ----
+# ---- Working Directory ----
 WORKDIR /app
 
-# ---- Copy source code ----
-# .dockerignore should exclude files not needed in production
+# ---- Copy Files ----
+# Copy only what’s needed (Docker will use .dockerignore for the rest)
+COPY bun.lock package.json ./
+RUN bun install --frozen-lockfile --production
+
 COPY . .
 
-# ---- Install dependencies ----
-RUN bun install
-
-# ---- Expose ports ----
-# 3010: LogDB
-EXPOSE 3010
-
-# ---- Set environment variables ----
+# ---- Environment ----
 ENV NODE_ENV=production
 
-# ---- Start the application ----
-CMD ["bun", "."]
+# ---- Expose Port ----
+EXPOSE 3010
+
+# ---- Start Server ----
+CMD ["bun", "run", "start"]
